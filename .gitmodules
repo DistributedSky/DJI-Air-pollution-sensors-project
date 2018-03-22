@@ -1,0 +1,6 @@
+[submodule "Libelium_Waspmote_API/waspmoteapi"]
+	path = Libelium_Waspmote_API/waspmoteapi
+	url = https://github.com/Libelium/waspmoteapi.git
+[submodule "DJI_SDK/Onboard-SDK-ROS"]
+	path = DJI_SDK/Onboard-SDK-ROS
+	url = https://github.com/dji-sdk/Onboard-SDK-ROS.git
