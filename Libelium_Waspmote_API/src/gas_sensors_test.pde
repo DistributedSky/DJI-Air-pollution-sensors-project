@@ -16,6 +16,17 @@ void setup()
 {
     USB.println(F("Gas sensors test"));
     pinMode(GP_I2C_MAIN_EN, OUTPUT);  // For BME sensor
+    CO2.ON();
+    SO2.ON();
+    CO.ON();
+    NO.ON();
+    digitalWrite(GP_I2C_MAIN_EN, HIGH);
+    BME.ON();
+
+    RTC.ON();
+    // Setting time [yy:mm:dd:dow:hh:mm:ss]
+    RTC.setTime("18:01:01:06:00:00:00");
+    Utils.setLED(LED0, LED_ON);
 }
 
 
@@ -25,27 +36,12 @@ void loop()
     // 1. Power on  sensors
     ///////////////////////////////////////////
 
-    CO2.ON();
-    SO2.ON();
-  	CO.ON();
-  	NO.ON();
-    digitalWrite(GP_I2C_MAIN_EN, HIGH);
-    BME.ON();
-    
-    // Show the remaining battery level
-    USB.print(F("Battery Level: "));
-    USB.print(PWR.getBatteryLevel(),DEC);
-    USB.print(F(" %"));
-
-    // Show the battery Volts
-    USB.print(F(" | Battery (Volts): "));
-    USB.print(PWR.getBatteryVolts());
-    USB.println(F(" V"));
-
     // NDIR gas sensor needs a warm up time at least 120 seconds
     // To reduce the battery consumption, use deepSleep instead delay
     // After 2 minutes, Waspmote wakes up thanks to the RTC Alarm
-    PWR.deepSleep("00:00:02:00", RTC_OFFSET, RTC_ALM1_MODE1, ALL_ON);
+    //PWR.deepSleep("00:00:02:00", RTC_OFFSET, RTC_ALM1_MODE1, ALL_ON);
+    // Utils.setLED(LED0, LED_ON);
+    // delay(60000);
 
 
     ///////////////////////////////////////////
@@ -65,6 +61,8 @@ void loop()
 
     // And print the values via USB
     USB.println(F("***************************************"));
+    USB.print(F("Time [Day of week, YY/MM/DD, hh:mm:ss]: "));
+    USB.println(RTC.getTime());
     USB.print(F("CO2 concentration: "));
     USB.print(concCO2);
     USB.println(F(" ppm"));
@@ -86,6 +84,12 @@ void loop()
     USB.print(F("Pressure: "));
     USB.print(pressure);
     USB.println(F(" Pa"));
+    USB.print(F("Battery Level: "));
+    USB.print(PWR.getBatteryLevel(),DEC);
+    USB.print(F(" %"));
+    USB.print(F(" | Battery (Volts): "));
+    USB.print(PWR.getBatteryVolts());
+    USB.println(F(" V"));
 
 
     ///////////////////////////////////////////
@@ -94,11 +98,11 @@ void loop()
 
     // Power off the NDIR sensor. If there aren't more gas sensors powered,
     // turn off the board automatically
-    CO2.OFF();
-    SO2.OFF();
-    CO.OFF();
-    NO.OFF();
-    digitalWrite(GP_I2C_MAIN_EN, LOW);
+    // CO2.OFF();
+    // SO2.OFF();
+    // CO.OFF();
+    // NO.OFF();
+    // digitalWrite(GP_I2C_MAIN_EN, LOW);
 
     ///////////////////////////////////////////
     // 4. Sleep
@@ -106,6 +110,7 @@ void loop()
 
     // Go to deepsleep.
     // After 3 minutes, Waspmote wakes up thanks to the RTC Alarm
-    PWR.deepSleep("00:00:02:00", RTC_OFFSET, RTC_ALM1_MODE1, ALL_OFF);
-
+    //PWR.deepSleep("00:00:02:00", RTC_OFFSET, RTC_ALM1_MODE1, ALL_OFF);
+    // Utils.setLED(LED0, LED_OFF);
+    //delay(1000);
 }
