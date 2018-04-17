@@ -7,7 +7,7 @@
 
 // define GPS timeout when connecting to satellites
 // this time is defined in seconds (240sec = 4minutes)
-#define TIMEOUT 0
+#define TIMEOUT 180
 
 // Define BROADCAST MAC address
 char RX_ADDRESS[] = "000000000000FFFF";
