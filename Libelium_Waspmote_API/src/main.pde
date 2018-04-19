@@ -7,7 +7,7 @@
 
 // define GPS timeout when connecting to satellites
 // this time is defined in seconds (240sec = 4minutes)
-#define TIMEOUT 180
+#define TIMEOUT 10
 
 // Define BROADCAST MAC address
 char RX_ADDRESS[] = "000000000000FFFF";
@@ -33,17 +33,8 @@ float concCO, concNO, concCO2, concSO2;
 void setup()
 {
   USB.ON();
-  USB.println(F("Drone Employee \nAir pollution sensors project"));
-
-  GPS.ON();
-  Utils.setLED(LED1, LED_ON);
-  // Wait for GPS signal for specific time
-  status = GPS.waitForSignal(TIMEOUT);
-
-  if( status == true )  USB.println(F("> GPS ok"));
-  else                  USB.println(F("> GPS fail"));
-
-  Utils.setLED(LED1, LED_OFF);
+  USB.println(F("Drone Employee"));
+  USB.println(F("Air pollution sensors project"));
 
   pinMode(GP_I2C_MAIN_EN, OUTPUT);  // For BME sensor
   CO2.ON();
@@ -62,14 +53,20 @@ void setup()
   frame.setID(node_ID);
   // init XBee
   xbee802.ON();
+
+  GPS.ON();
+  Utils.setLED(LED1, LED_ON);
+  // Wait for GPS signal for specific time
+  status = GPS.waitForSignal(TIMEOUT);
+  Utils.setLED(LED1, LED_OFF);
 }
 
 
 void loop()
 {
   // 1. Read sensors
-  if( status == true )
-  {
+  status = GPS.waitForSignal(TIMEOUT);
+  if( status == true ) {
     GPS.getPosition();
   }
   // Read the NDIR sensor and compensate with the temperature internally
@@ -108,11 +105,15 @@ void loop()
   USB.print(F("Pressure: "));
   USB.print(pressure);
   USB.println(F(" Pa"));
-  USB.print("Latitude (degrees):");
-  USB.println(GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator));
-  USB.print("Longitude (degrees):");
-  USB.println(GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator));
-
+  if( status == true ) {
+    USB.print("Latitude (degrees):");
+    USB.println(GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator));
+    USB.print("Longitude (degrees):");
+    USB.println(GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator));
+  }
+  else {
+    USB.println(F("GPS: FAIL"));
+  }
   // 3. Create ASCII frame
   frame.createFrame(ASCII);
 
@@ -126,9 +127,14 @@ void loop()
 
   frame.createFrame(ASCII);
   frame.addSensor(SENSOR_GASES_PRO_NO, concNO);
-  frame.addSensor(SENSOR_GPS,
-                  GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator),
-                  GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator) );
+  if( status == true ) {
+    frame.addSensor(SENSOR_GPS,
+                    GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator),
+                    GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator) );
+  }
+  else {
+      frame.addSensor(SENSOR_GPS, 0.0, 0.0 );
+  }
   // frame.addSensor(SENSOR_TIME,GPS.timeGPS);
   // frame.addSensor(SENSOR_DATE,GPS.dateGPS);
   frame.addSensor(SENSOR_TIME,RTC.getTime());
@@ -142,12 +148,12 @@ void send_frame () {
   // check TX flag
   if( error == 0 )
   {
-    USB.println(F("> Send ok"));
+    USB.println(F("> Send: 1 frame"));
     Utils.blinkGreenLED();
   }
   else
   {
-    USB.println(F("> Send fail"));
+    USB.println(F("> Send: FAIL"));
     Utils.blinkRedLED();
   }
 }
