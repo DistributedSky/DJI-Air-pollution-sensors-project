@@ -1,4 +1,4 @@
-### SETUP DJI Onboard SDK on RPI3
+# DJI Onboard SDK on RPI3
 
 Если вы хотите развернуть DJI Onboard SDK вам потребуется следующее:
 
