@@ -3,7 +3,7 @@
 #include <BME280.h>
 #include <WaspGPS.h>
 #include <WaspFrame.h>
-// #include <WaspXBee802.h>
+#include <WaspXBee802.h>
 
 #define USB_DEBUG 0
 
@@ -11,7 +11,7 @@
 #define TIMEOUT 10
 
 // Define BROADCAST MAC address
-// char RX_ADDRESS[] = "000000000000FFFF";
+char RX_ADDRESS[] = "000000000000FFFF";
 // Define the Waspmote ID
 char node_ID[] = "DJI_01";
 
@@ -51,7 +51,7 @@ void setup()
   // Set the Waspmote ID
   frame.setID(node_ID);
   // Init XBee
-  // xbee802.ON();
+  xbee802.ON();
   // Init GPS
   GPS.ON();
 }
@@ -141,20 +141,20 @@ void loop()
 }
 
 void send_frame () {
-  // uint8_t error;
+  uint8_t error;
 
   // send XBee packet
-  // error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
+  error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
   // check TX flag
   if (USB_DEBUG) {
     USB.print("> Frame (ASCII): ");
     print_frame ();
-  //   if( error == 0 ) {
-  //     USB.println("> Send: 1 frame");
-  //   }
-  //   else {
-  //     USB.println("> Send: FAIL");
-  //   }
+    if( error == 0 ) {
+      USB.println("> Send: 1 frame");
+    }
+    else {
+      USB.println("> Send: FAIL");
+    }
   }
   else {
     print_frame ();
