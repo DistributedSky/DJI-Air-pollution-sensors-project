@@ -10,10 +10,10 @@ status_start = False
 
 def callback(data):
     status_int = data.data 
-    if data.data == 3 and status_start == False:
-        status_start = True
-        print (status_start)
-    # print("Status {0}".format(data.data))
+    # if data.data == 3 and status_start == False:
+        # status_start = True
+        # print (status_start)
+    print("Status {0}".format(data.data))
     # rospy.sleep(2)
 
 def mission_init():
