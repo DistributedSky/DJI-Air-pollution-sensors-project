@@ -5,20 +5,18 @@
 #include <WaspFrame.h>
 #include <WaspXBee802.h>
 
-// define GPS timeout when connecting to satellites
-// this time is defined in seconds (240sec = 4minutes)
-#define TIMEOUT 180
+#define USB_DEBUG 0
+
+// Define GPS timeout when connecting to satellites
+#define TIMEOUT 10
 
 // Define BROADCAST MAC address
 char RX_ADDRESS[] = "000000000000FFFF";
 // Define the Waspmote ID
 char node_ID[] = "DJI_01";
 
-// define variable
-uint8_t error;
-
 // define status variable for GPS connection
-bool status;
+bool gps_status;
 
 Gas CO2(SOCKET_1);
 Gas SO2(SOCKET_4);
@@ -33,17 +31,10 @@ float concCO, concNO, concCO2, concSO2;
 void setup()
 {
   USB.ON();
-  USB.println(F("Drone Employee \nAir pollution sensors project"));
-
-  GPS.ON();
-  Utils.setLED(LED1, LED_ON);
-  // Wait for GPS signal for specific time
-  status = GPS.waitForSignal(TIMEOUT);
-
-  if( status == true )  USB.println(F("> GPS ok"));
-  else                  USB.println(F("> GPS fail"));
-
-  Utils.setLED(LED1, LED_OFF);
+  if (USB_DEBUG) {
+    USB.println(F("Drone Employee"));
+    USB.println(F("Air pollution sensors project"));
+  }
 
   pinMode(GP_I2C_MAIN_EN, OUTPUT);  // For BME sensor
   CO2.ON();
@@ -57,61 +48,69 @@ void setup()
   // Setting time [yy:mm:dd:dow:hh:mm:ss]
   RTC.setTime("18:01:01:06:00:00:00");
   Utils.setLED(LED0, LED_ON);
-
   // Set the Waspmote ID
   frame.setID(node_ID);
-  // init XBee
+  // Init XBee
   xbee802.ON();
+  // Init GPS
+  GPS.ON();
 }
 
 
 void loop()
 {
   // 1. Read sensors
-  if( status == true )
-  {
-    GPS.getPosition();
-  }
-  // Read the NDIR sensor and compensate with the temperature internally
+
   concCO2 = CO2.getConc();
   concSO2 = SO2.getConc();
   concCO = CO.getConc();
   concNO = NO.getConc();
 
-  // Read enviromental variables
   temperature = BME.getTemperature(BME280_OVERSAMP_16X, BME280_FILTER_COEFF_OFF);
   humidity = BME.getHumidity(BME280_OVERSAMP_16X);
   pressure = BME.getPressure(BME280_OVERSAMP_16X, BME280_FILTER_COEFF_OFF);
 
-  // And print the values via USB
-  USB.println(F(">"));
-  USB.print(F("Time [Day of week, YY/MM/DD, hh:mm:ss]: "));
-  USB.println(RTC.getTime());
-  USB.print(F("CO2 concentration: "));
-  USB.print(concCO2);
-  USB.println(F(" ppm"));
-  USB.print(F("SO2 concentration: "));
-  USB.print(concSO2);
-  USB.println(F(" ppm"));
-  USB.print(F("CO concentration: "));
-  USB.print(concCO);
-  USB.println(F(" ppm"));
-  USB.print(F("NO concentration: "));
-  USB.print(concNO);
-  USB.println(F(" ppm"));
-  USB.print(F("Temperature: "));
-  USB.print(temperature);
-  USB.println(F(" Celsius degrees"));
-  USB.print(F("RH: "));
-  USB.print(humidity);
-  USB.println(F(" %"));
-  USB.print(F("Pressure: "));
-  USB.print(pressure);
-  USB.println(F(" Pa"));
-  USB.print("Latitude (degrees):");
-  USB.println(GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator));
-  USB.print("Longitude (degrees):");
-  USB.println(GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator));
+  gps_status = GPS.waitForSignal(TIMEOUT);
+  if( gps_status == true ) {
+    GPS.getPosition();
+  }
+
+  // // And print the values via USB
+  if (USB_DEBUG) {
+    USB.println(F(">"));
+    USB.print(F("Time [Day of week, YY/MM/DD, hh:mm:ss]: "));
+    USB.println(RTC.getTime());
+    USB.print(F("CO2 concentration: "));
+    USB.print(concCO2);
+    USB.println(F(" ppm"));
+    USB.print(F("SO2 concentration: "));
+    USB.print(concSO2);
+    USB.println(F(" ppm"));
+    USB.print(F("CO concentration: "));
+    USB.print(concCO);
+    USB.println(F(" ppm"));
+    USB.print(F("NO concentration: "));
+    USB.print(concNO);
+    USB.println(F(" ppm"));
+    USB.print(F("Temperature: "));
+    USB.print(temperature);
+    USB.println(F(" Celsius degrees"));
+    USB.print(F("RH: "));
+    USB.print(humidity);
+    USB.println(F(" %"));
+    USB.print(F("Pressure: "));
+    USB.print(pressure);
+    USB.println(F(" Pa"));
+    if( gps_status == true ) {
+      USB.print("Latitude (degrees):");
+      USB.println(GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator));
+      USB.print("Longitude (degrees):");
+      USB.println(GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator));
+    }
+    else {
+      USB.println(F("GPS: FAIL"));
+    }
+  }
 
   // 3. Create ASCII frame
   frame.createFrame(ASCII);
@@ -126,9 +125,14 @@ void loop()
 
   frame.createFrame(ASCII);
   frame.addSensor(SENSOR_GASES_PRO_NO, concNO);
-  frame.addSensor(SENSOR_GPS,
-                  GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator),
-                  GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator) );
+  if( gps_status == true ) {
+    frame.addSensor(SENSOR_GPS,
+                    GPS.convert2Degrees(GPS.latitude, GPS.NS_indicator),
+                    GPS.convert2Degrees(GPS.longitude, GPS.EW_indicator) );
+  }
+  else {
+    frame.addSensor(SENSOR_GPS, 0.0, 0.0 );
+  }
   // frame.addSensor(SENSOR_TIME,GPS.timeGPS);
   // frame.addSensor(SENSOR_DATE,GPS.dateGPS);
   frame.addSensor(SENSOR_TIME,RTC.getTime());
@@ -137,17 +141,32 @@ void loop()
 }
 
 void send_frame () {
+  uint8_t error;
+
   // send XBee packet
   error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
   // check TX flag
-  if( error == 0 )
-  {
-    USB.println(F("> Send ok"));
-    Utils.blinkGreenLED();
+  if (USB_DEBUG) {
+    USB.print("> Frame (ASCII): ");
+    print_frame ();
+    if( error == 0 ) {
+      USB.println("> Send: 1 frame");
+    }
+    else {
+      USB.println("> Send: FAIL");
+    }
   }
-  else
-  {
-    USB.println(F("> Send fail"));
-    Utils.blinkRedLED();
+  else {
+    print_frame ();
   }
+}
+
+void print_frame () {
+  USB.secureBegin();
+  for( uint16_t i= 0; i < frame.length ; i++ ) {
+    printByte( frame.buffer[i],  0);
+  }
+  printByte( '\r',  0);
+  printByte( '\n',  0);
+  USB.secureEnd();
 }
