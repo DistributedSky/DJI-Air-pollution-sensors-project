@@ -4,3 +4,6 @@
 [submodule "DJI_SDK/Onboard-SDK-ROS"]
 	path = DJI_SDK/Onboard-SDK-ROS
 	url = https://github.com/dji-sdk/Onboard-SDK-ROS.git
+[submodule "DJI_SDK/Onboard-SDK"]
+	path = DJI_SDK/Onboard-SDK
+	url = https://github.com/dji-sdk/Onboard-SDK.git
