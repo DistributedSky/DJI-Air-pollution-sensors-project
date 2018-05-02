@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch> 
+	<arg name="YAML_file_name" default="test_mission"/>
+	<arg name="mission_file" default="$(find de_airsense_ros)/missions/$(arg YAML_file_name).yaml"/> 
+
+	<node name="de_airsense_mission" pkg="de_airsense_ros" type="de_airsense_mission.py" output="screen">
+		<rosparam command="load" file="$(arg mission_file)"/>
+	</node>
+
+</launch>
