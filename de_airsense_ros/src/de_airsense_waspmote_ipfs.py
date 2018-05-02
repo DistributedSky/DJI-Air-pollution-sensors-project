@@ -37,8 +37,8 @@ def main():
             time.sleep(INTERVAL)
 
         except KeyboardInterrupt: 
-
-            folderName = "./sensor_data/"
+            dir = os.path.dirname(__file__)
+            folderName = os.path.join(dir, 'sensor_data/')
             if not os.path.exists(os.path.dirname(folderName)):
                 try:
                     os.makedirs(os.path.dirname(folderName))

@@ -8,10 +8,10 @@ import dji_sdk.msg
 from dji_sdk.srv import DroneTaskControlRequest
 from std_msgs.msg import UInt8
 
-status_start = False
+# status_start = False
 
-def callback(data):
-    status_int = data.data 
+# def callback(data):
+#     status_int = data.data 
     # if data.data == 3 and status_start == False:
         # status_start = True
         # print (status_start)
@@ -39,7 +39,7 @@ def mission_start():
     try:
         auth = rospy.ServiceProxy('dji_sdk/sdk_control_authority', dji_sdk.srv.SDKControlAuthority)
         resp = auth(1)
-        print 'sdk_control_authority'
+        print 'Service. Sdk control authority:'
         print resp.result
 
     except rospy.ServiceException, e:
@@ -59,15 +59,15 @@ def mission_start():
         mission_msg.action_on_rc_lost  = dji_sdk.msg.MissionWaypointTask.ACTION_AUTO;
         mission_msg.gimbal_pitch_mode  = dji_sdk.msg.MissionWaypointTask.GIMBAL_PITCH_FREE;
 
-        newWaypointList = [
-                dji_sdk.msg.MissionWaypoint(latitude = 60.008217, longitude = 30.320849, altitude = 8, damping_distance = 0, target_yaw = 0, has_action = 0, target_gimbal_pitch = 0, turn_mode = 0, action_time_limit = 1),
-                dji_sdk.msg.MissionWaypoint(latitude = 60.007914, longitude = 30.320765, altitude = 8, damping_distance = 0, target_yaw = 0, has_action = 0, target_gimbal_pitch = 0, turn_mode = 0, action_time_limit = 1)
-                ]
-        mission_msg.mission_waypoint = newWaypointList
+        # newWaypointList = [
+        #         dji_sdk.msg.MissionWaypoint(latitude = 60.008217, longitude = 30.320849, altitude = 8, damping_distance = 0, target_yaw = 0, has_action = 0, target_gimbal_pitch = 0, turn_mode = 0, action_time_limit = 1),
+        #         dji_sdk.msg.MissionWaypoint(latitude = 60.007914, longitude = 30.320765, altitude = 8, damping_distance = 0, target_yaw = 0, has_action = 0, target_gimbal_pitch = 0, turn_mode = 0, action_time_limit = 1)
+        #         ]
+        mission_msg.mission_waypoint = waypoints_creat()
 
-        print mission_msg
+        # print mission_msg
         resp = mission(mission_msg)
-        print 'mission_waypoint_upload'
+        print 'Service. Mission waypoint upload:'
         print resp.result
 
     except rospy.ServiceException, e:
@@ -94,7 +94,7 @@ def mission_start():
     try:
         start = rospy.ServiceProxy('dji_sdk/mission_waypoint_action', dji_sdk.srv.MissionWpAction)
         resp = start(0)
-        print 'mission_waypoint_action'
+        print 'Service. Mission waypoint action:'
         print resp.result
 
     except rospy.ServiceException, e:
@@ -102,10 +102,9 @@ def mission_start():
 
 
 if __name__ == '__main__':
-    waypoints_creat()
     rospy.init_node('de_airsense_mission')
     print 'Waiting dji_sdk for services...'
-    rospy.Subscriber('dji_sdk/flight_status', UInt8, callback)
+    # rospy.Subscriber('dji_sdk/flight_status', UInt8, callback)
     rospy.wait_for_service('dji_sdk/sdk_control_authority')
     # rospy.wait_for_service('dji_sdk/drone_arm_control')
     # rospy.wait_for_service('dji_sdk/drone_task_control')
