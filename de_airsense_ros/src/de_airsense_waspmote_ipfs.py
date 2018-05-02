@@ -6,60 +6,83 @@ import array
 import os
 import errno
 import ipfsapi
+from std_msgs.msg import UInt8
+import rospy
 
 DEFAULT_PORT = '/dev/ttyUSB0'
 BAUDRATE = 115200
-INTERVAL = 1
+RATE_HZ = 1
+IN_AIR_STANDBY = 3
+ON_GROUND = 1
 
-def main():
-    frame = ""
+status_in_air = False
+
+frame_array = []
+
+def write_send_data():
+    global frame_array
+    fileName = 'data_'
+    dir = os.path.dirname(__file__)
+    folderName = os.path.join(dir, 'sensor_data/')
+    if not os.path.exists(os.path.dirname(folderName)):
+        try:
+            os.makedirs(os.path.dirname(folderName))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+                
+    timestr = time.strftime('%Y%m%d_%H%M%S_')
+    fileName = folderName + fileName + timestr + '.txt'
+    with open (fileName, 'w') as f:
+        for string in frame_array:
+            f.write(string)
     frame_array = []
-    fileName = "data_"
 
+    api = ipfsapi.connect('127.0.0.1', 5001)
+    res = api.add(fileName)
+    print (res)
+    if res != None:
+        os.rename(fileName, fileName[:-4] + res['Hash'] + fileName[-4:])
+
+def status_cb(data): 
+    global status_in_air
+    if data.data == IN_AIR_STANDBY and status_in_air == False:
+        status_in_air = True
+        print 'Start to write data'
+    elif data.data == ON_GROUND and status_in_air == True:
+        print 'Stop to write data'
+        write_send_data()
+        status_in_air = False
+
+if __name__ == '__main__':
+    print 'Starting waspmote gas sensors...'
+    rospy.init_node('de_airsense_waspmore_ipfs')
+    rospy.Subscriber('dji_sdk/flight_status', UInt8, status_cb)
+    rate = rospy.Rate(RATE_HZ)
+    frame = ''
     serial_port = serial.Serial(DEFAULT_PORT, BAUDRATE, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)
-
-    while True:
+    waspmote_ready = False
+    while not rospy.is_shutdown():
         try:    
             while serial_port.in_waiting > 0:
+                if waspmote_ready == False:
+                    waspmote_ready = True
+                    print 'Waspmote gas sensors is ready'
                 byte = serial_port.read()
 
-                if byte == b"\n":
-                    print (frame)
-                    frame += byte.decode()
-                    frame_array.append(frame)
-                    frame = ""
-                    continue
+                if status_in_air:
+                    if byte == b'\n':
+                        print (frame)
+                        frame += byte.decode()
+                        frame_array.append(frame)
+                        frame = ''
+                        continue
 
-                if byte != b"\x86" and byte != b"\x00":
-                    frame += byte.decode()
-
-           
-            time.sleep(INTERVAL)
+                    if byte != b'\x86' and byte != b'\x00':
+                        frame += byte.decode()
+            rate.sleep()
 
         except KeyboardInterrupt: 
-            dir = os.path.dirname(__file__)
-            folderName = os.path.join(dir, 'sensor_data/')
-            if not os.path.exists(os.path.dirname(folderName)):
-                try:
-                    os.makedirs(os.path.dirname(folderName))
-                except OSError as exc: # Guard against race condition
-                    if exc.errno != errno.EEXIST:
-                        raise
-                        
-            timestr = time.strftime("%Y%m%d_%H%M%S_")
-            fileName = folderName + fileName + timestr + ".txt"
-            with open (fileName, "w") as f:
-                for item in frame_array:
-                    f.write(item)
-
-            api = ipfsapi.connect('127.0.0.1', 5001)
-            res = api.add(fileName)
-            print (res)
-            if res != None:
-                os.rename(fileName, fileName[:-4] + res["Hash"] + fileName[-4:])
-            print ("\nExit")
+            print '\nExit'
             break
 
-if __name__ == "__main__":
-    
-    main()
