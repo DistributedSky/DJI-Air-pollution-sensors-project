@@ -3,9 +3,9 @@
 waypoints:
   - lat: 60.008217
     lon: 30.320849
-    alt: 10.0
-    delay: 10
+    alt: 14.0
+    delay: 3
   - lat: 60.007914
     lon: 30.320765
-    alt: 20.0
-    delay: 5
+    alt: 25.0
+    delay: 9

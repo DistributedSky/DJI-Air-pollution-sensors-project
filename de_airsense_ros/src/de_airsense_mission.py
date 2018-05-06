@@ -6,21 +6,27 @@ import dji_sdk.srv
 import dji_sdk.msg
 from dji_sdk.srv import DroneTaskControlRequest
 
-def waypoints_creat ():
+def waypoints_create ():
     param = rospy.get_param('/de_airsense_mission/waypoints')
     print 'Waypoints from parameter server: '
     print param
     newWaypointList = []
+    # cmd_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # cmd_parameter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for index in range(len(param)):
+        cmd_parameter = [param[index]['delay'] * 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         newWaypointList.append(dji_sdk.msg.MissionWaypoint( latitude = param[index]['lat'], 
                                                             longitude = param[index]['lon'], 
                                                             altitude = param[index]['alt'], 
                                                             damping_distance = 2, 
                                                             target_yaw = 0, 
-                                                            has_action = 0, 
+                                                            has_action = 1, 
                                                             target_gimbal_pitch = 0, 
                                                             turn_mode = 0, 
-                                                            action_time_limit = 100))
+                                                            action_time_limit = 120,
+                                                            waypoint_action = dji_sdk.msg.MissionWaypointAction(
+                                                                action_repeat = 1,
+                                                                command_parameter = cmd_parameter)))
     return newWaypointList
 
 def mission_start():
@@ -45,9 +51,9 @@ def mission_start():
         mission_msg.action_on_rc_lost  = dji_sdk.msg.MissionWaypointTask.ACTION_AUTO;
         mission_msg.gimbal_pitch_mode  = dji_sdk.msg.MissionWaypointTask.GIMBAL_PITCH_FREE;
 
-        mission_msg.mission_waypoint = waypoints_creat()
+        mission_msg.mission_waypoint = waypoints_create()
 
-        # print mission_msg
+        print mission_msg
         resp = mission(mission_msg)
         print 'Service. Mission waypoint upload:'
         print resp.result

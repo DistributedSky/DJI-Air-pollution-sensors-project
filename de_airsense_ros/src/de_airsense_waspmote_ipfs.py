@@ -7,6 +7,7 @@ import os
 import errno
 import ipfsapi
 from std_msgs.msg import UInt8
+from sensor_msgs.msg import NavSatFix
 import rospy
 
 DEFAULT_PORT = '/dev/ttyUSB0'
@@ -16,7 +17,7 @@ IN_AIR_STANDBY = 3
 ON_GROUND = 1
 
 status_in_air = False
-
+altitude = 0
 frame_array = []
 
 def write_send_data():
@@ -39,8 +40,10 @@ def write_send_data():
     frame_array = []
 
     api = ipfsapi.connect('127.0.0.1', 5001)
+    # api = ipfsapi.connect('52.178.98.62', 9095)
     res = api.add(fileName)
     print (res)
+    time.sleep(1)
     if res != None:
         os.rename(fileName, fileName[:-4] + res['Hash'] + fileName[-4:])
 
@@ -54,10 +57,16 @@ def status_cb(data):
         write_send_data()
         status_in_air = False
 
+def position_cb(data):
+    global altitude
+    altitude = data.altitude
+
 if __name__ == '__main__':
     print 'Starting waspmote gas sensors...'
     rospy.init_node('de_airsense_waspmore_ipfs')
     rospy.Subscriber('dji_sdk/flight_status', UInt8, status_cb)
+    rospy.Subscriber('dji_sdk/gps_position', NavSatFix, position_cb)
+
     rate = rospy.Rate(RATE_HZ)
     frame = ''
     serial_port = serial.Serial(DEFAULT_PORT, BAUDRATE, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)
@@ -72,9 +81,10 @@ if __name__ == '__main__':
 
                 if status_in_air:
                     if byte == b'\n':
-                        print (frame)
-                        frame += byte.decode()
+                        frame += byte.decode()  
+                        frame += 'ALT:{0:.1f}#{1:s}'.format(altitude, time.strftime('%Y/%m/%d %H:%M:%S'))
                         frame_array.append(frame)
+                        print (frame)
                         frame = ''
                         continue
 
