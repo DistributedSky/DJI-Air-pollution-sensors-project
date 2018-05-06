@@ -31,19 +31,23 @@ def write_send_data(frame_array):
             if exc.errno != errno.EEXIST:
                 raise
                 
-    timestr = time.strftime('%Y%m%d_%H%M%S_')
-    fileName = folderName + fileName + timestr + '.txt'
-    with open (fileName, 'w') as f:
+    timestr = time.strftime('%Y-%m-%d_%H-%M-%S')
+    path = folderName + fileName + timestr + '.txt'
+    with open (path, 'w') as f:
         for string in frame_array:
             f.write(string)
 
     api = ipfsapi.connect('127.0.0.1', 5001)
     # api = ipfsapi.connect('52.178.98.62', 9095)
-    res = api.add(fileName)
+    res = api.add(path)
     print (res)
-    time.sleep(1)
+    # time.sleep(1)
     if res != None:
-        os.rename(fileName, fileName[:-4] + res['Hash'] + fileName[-4:])
+        path = folderName + fileName + timestr + '_' + res['Hash'] + '.txt'
+        with open (path, 'w') as f:
+            for string in frame_array:
+                f.write(string)
+    #     os.rename(fileName, fileName[:-4] + res['Hash'] + fileName[-4:])
 
 def status_cb(data): 
     global status_in_air
