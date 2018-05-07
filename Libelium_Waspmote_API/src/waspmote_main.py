@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 
 import serial
 import time
@@ -25,6 +25,7 @@ def main():
 
                 if byte == b"\n":
                     print (frame)
+                    frame += byte.decode()
                     frame_array.append(frame)
                     frame = ""
                     continue
@@ -45,8 +46,8 @@ def main():
                     if exc.errno != errno.EEXIST:
                         raise
                         
-            timestr = time.strftime("%Y%m%d-%H%M%S")
-            fileName =folderName + fileName + timestr + ".txt"
+            timestr = time.strftime("%Y%m%d_%H%M%S_")
+            fileName = folderName + fileName + timestr + ".txt"
             with open (fileName, "w") as f:
                 for item in frame_array:
                     f.write(item)
@@ -54,7 +55,8 @@ def main():
             api = ipfsapi.connect('127.0.0.1', 5001)
             res = api.add(fileName)
             print (res)
-
+            if res != None:
+                os.rename(fileName, fileName[:-4] + res["Hash"] + fileName[-4:])
             print ("\nExit")
             break
 
