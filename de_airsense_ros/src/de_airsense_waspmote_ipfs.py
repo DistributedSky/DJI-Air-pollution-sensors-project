@@ -8,9 +8,10 @@ import errno
 import ipfsapi
 from std_msgs.msg import UInt8
 from sensor_msgs.msg import NavSatFix
+from geometry_msgs.msg import PointStamped
 import rospy
 
-DEFAULT_PORT = '/dev/ttyUSB0'
+DEFAULT_PORT = '/dev/waspmote'
 BAUDRATE = 115200
 STOP_SYMBOL = b'$'
 RATE_HZ = 1
@@ -68,20 +69,23 @@ def status_cb(data):
         status_to_send = True
         status_in_air = False
 
-def position_cb(data):
-    global altitude
+def gps_position_cb(data):
     global latitude
     global longitude
-    altitude = data.altitude
     latitude = data.latitude
     longitude = data.longitude
+
+def local_position_cb(data):
+    global altitude
+    altitude = data.Point.z
 
 if __name__ == '__main__':
     print 'Starting waspmote gas sensors...'
     print 'Waiting for ROS services...'
     rospy.init_node('de_airsense_waspmore_ipfs')
     rospy.Subscriber('dji_sdk/flight_status', UInt8, status_cb)
-    rospy.Subscriber('dji_sdk/gps_position', NavSatFix, position_cb)
+    rospy.Subscriber('dji_sdk/gps_position', NavSatFix, gps_position_cb)
+    rospy.Subscriber('dji_sdk/local_position', PointStamped, local_position_cb)
     ipfs_api_loc = ipfsapi.connect('127.0.0.1', 5001)
     ipfs_api_rem = ipfsapi.connect('52.178.98.62', 9095)
 
