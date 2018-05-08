@@ -1,0 +1,18 @@
+
+waypoints:
+  - lat: 60.072643
+    lon: 30.172989
+    alt: 60.0
+    delay: 20
+  - lat: 60.074253
+    lon: 30.169832
+    alt: 60.0
+    delay: 20
+  - lat: 60.073059
+    lon: 30.167692
+    alt: 60.0
+    delay: 20
+  - lat: 60.070843
+    lon: 30.171373
+    alt: 60.0
+    delay: 20
