@@ -6,12 +6,12 @@ import array
 import os
 import errno
 import ipfsapi
-from std_msgs.msg import UInt8
+from std_msgs.msg import UInt8, Float32
 from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PointStamped
 import rospy
 
-DEFAULT_PORT = '/dev/waspmote'
+DEFAULT_PORT = '/dev/ttyUSB0'
 BAUDRATE = 115200
 STOP_SYMBOL = b'$'
 RATE_HZ = 1
@@ -20,7 +20,8 @@ ON_GROUND = 1
 
 status_in_air = False
 status_to_send = False
-altitude = 0.0
+altitude_rel = 0.0
+altitude_gps = 0.0
 latitude = 0.0
 longitude = 0.0
 
@@ -72,12 +73,14 @@ def status_cb(data):
 def gps_position_cb(data):
     global latitude
     global longitude
+    global altitude_gps
     latitude = data.latitude
     longitude = data.longitude
+    altitude_gps = data.altitude
 
-def local_position_cb(data):
-    global altitude
-    altitude = data.Point.z
+def height_above_takeoff_cb(data):
+    global altitude_rel
+    altitude_rel = data.data
 
 if __name__ == '__main__':
     print 'Starting waspmote gas sensors...'
@@ -85,7 +88,7 @@ if __name__ == '__main__':
     rospy.init_node('de_airsense_waspmore_ipfs')
     rospy.Subscriber('dji_sdk/flight_status', UInt8, status_cb)
     rospy.Subscriber('dji_sdk/gps_position', NavSatFix, gps_position_cb)
-    rospy.Subscriber('dji_sdk/local_position', PointStamped, local_position_cb)
+    rospy.Subscriber('dji_sdk/height_above_takeoff', Float32, height_above_takeoff_cb)
     ipfs_api_loc = ipfsapi.connect('127.0.0.1', 5001)
     ipfs_api_rem = ipfsapi.connect('52.178.98.62', 9095)
 
@@ -106,9 +109,10 @@ if __name__ == '__main__':
 
                 if byte == STOP_SYMBOL:
                     # frame += byte.decode()  
-                    frame += 'Copter Latitude: {0:.6f}\nCopter Longitude: {1:.6f}\nCopter Altitude: {2:.2f} m\nSystem time: {3:s}\n'.format(   latitude, 
+                    frame += 'Copter Latitude: {0:.6f}\nCopter Longitude: {1:.6f}\nCopter GPS Altitude: {2:.2f} m\nCopter Relative Altitude: {3:.2f} m\nSystem time: {4:s}\n'.format(   latitude, 
                                                                                                                         longitude, 
-                                                                                                                        altitude, 
+                                                                                                                        altitude_gps,
+                                                                                                                        altitude_rel, 
                                                                                                                         time.strftime('%Y/%m/%d %H:%M:%S'))
                     frame_array.append(frame)
                     print (frame)
