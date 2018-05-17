@@ -76,7 +76,7 @@ void loop()
   USB.println(F(" ppm"));
   USB.print(F("CH4: "));
   USB.print(concCH4);
-  USB.println(F(" ppm"));
+  USB.println(F(" % LEL"));
   USB.print(F("SO2: "));
   USB.print(concSO2);
   USB.println(F(" ppm"));
@@ -103,7 +103,7 @@ void loop()
     USB.print("GPS time: ");
     USB.println(GPS.timeGPS);
     USB.print("GPS date: ");
-    USB.println(GPS.timeGPS);
+    USB.println(GPS.dateGPS);
   }
   else {
     USB.print("Latitude: ");

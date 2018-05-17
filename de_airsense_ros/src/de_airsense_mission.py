@@ -14,7 +14,7 @@ def waypoints_create ():
     # cmd_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     # cmd_parameter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for index in range(len(param)):
-        cmd_parameter = [param[index]['delay'] * 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        cmd_parameter = [param[index]['delay'] * 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         newWaypointList.append(dji_sdk.msg.MissionWaypoint( latitude = param[index]['lat'], 
                                                             longitude = param[index]['lon'], 
                                                             altitude = param[index]['alt'], 
@@ -23,9 +23,9 @@ def waypoints_create ():
                                                             has_action = 1, 
                                                             target_gimbal_pitch = 0, 
                                                             turn_mode = 0, 
-                                                            action_time_limit = 120,
+                                                            action_time_limit = 64000,
                                                             waypoint_action = dji_sdk.msg.MissionWaypointAction(
-                                                                action_repeat = 1,
+                                                                action_repeat = 10,
                                                                 command_parameter = cmd_parameter)))
     return newWaypointList
 
