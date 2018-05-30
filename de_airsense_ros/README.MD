@@ -21,13 +21,13 @@ For collect data from Waspmote and Matrice 100 and save it on storage and IPFS, 
 Script automatically collect data when drone in flight and then after landing save it to file and send to IPFS.
 
 #### 3G/4G Network setup
-Modem: Huawei E3372 with Hilink firmware, enabled DMZ and static IP (0.0.0.0).<br>
+Modem: Huawei E3372 with Hilink firmware, enabled DMZ and static IP.<br>
 ROS master via 3G cell network:<br>
 
 Copter: <br>
 `export ROS_HOSTNAME=copter_hostname`<br>
 
 PC: <br>
-`export ROS_MASTER_URI=http://0.0.0.0:11311`<br>
+`export ROS_MASTER_URI=http://<this is static ip>:11311`<br>
 Add `copter_hostname` and copter static IP to `/etc/hosts`:<br>
-`0.0.0.0 copter_hostname`
+`<this is static ip> copter_hostname`
