@@ -46,7 +46,7 @@ def arming():
         print('Service call failed: {0}'.format(e))
 
 def mission_create ():
-    param = rospy.get_param('/waypoints')
+    param = rospy.get_param('waypoints')
     print 'Waypoints from parameter server: '
     print param
 
@@ -111,7 +111,7 @@ def gps_cb(data):
 if __name__ == '__main__':
     rospy.init_node('de_px4_mission')
     print 'Waiting mavros for services...'
-    rospy.Subscriber("/mavros/global_position/global", NavSatFix, gps_cb)
+    rospy.Subscriber("mavros/global_position/global", NavSatFix, gps_cb)
     sleep(2)
     mission_create()
     print('Mission created')
