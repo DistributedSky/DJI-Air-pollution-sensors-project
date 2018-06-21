@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch> 
+	<arg name="m1" default="test_mission"/>
+	<arg name="mission_file1" default="$(find de_airsense_ros)/missions/$(arg m1).yaml"/> 
+
+	<arg name="m2" default="test_mission_2"/>
+	<arg name="mission_file2" default="$(find de_airsense_ros)/missions/$(arg m2).yaml"/> 
+
+    <group ns="uav1">
+        <node name="de_airsense_mission" pkg="de_airsense_ros" type="de_px4_mission.py" output="screen">
+			<rosparam command="load" file="$(arg mission_file1)"/>
+		</node>
+    </group>
+    <group ns="uav2">
+        <node name="de_airsense_mission" pkg="de_airsense_ros" type="de_px4_mission.py" output="screen">
+			<rosparam command="load" file="$(arg mission_file2)"/>
+		</node>
+    </group>
+
+</launch>
