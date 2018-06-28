@@ -1,10 +1,9 @@
-# DJI-Air-pollution-sensors-project
+# Automatic Environmental Inspection Service
 
-### Описание
-Проект нацелен на измерение уровня качества воздуха с помощью дрона. ПО позволяет удаленно подключаться и запускать коптер на миссию с прохождением заданных точек на карте, автоматически собирать данные с электрохимических датчиков газа и отправлять их в распределенную файловую систему IPFS.
+### Introduction
+This product helps you measure air pollution level with the help of an aerial drone. Drone Employee software allows you to connect to the drone remotely and launch an autonomous inspection mission. The drone will automatically collect data from electrochemical gas sensors and send them to a distributed IPFS file system.
 
-### Оборудование
-Используется следующее оборудование: </br>
+### Hardware
 - Dji Matrice 100
 - Libelium Waspmote
 - Libelium Gases PRO board
@@ -14,19 +13,19 @@
 - Huawei E3372
 - Plastic case and DC voltage regulators
 
-Общая [структурная схема](../master/Functional_scheme_v.1.1.pdf) и интерфейсы, объединяющие оборудование.
+General [block diagram](../master/Functional_scheme_v.1.1.pdf) and equipment interfaces.
 
-### ПО
-Для управления дроном и сбора данных используется инфраструктура ROS, которая работает на одноплатном компьютере Raspberry Pi 3. Взаимодействие с дроном осуществляется через Dji Onboard SDK. Для удаленного доступа к дрону используется ssh через подключение по статическому IPv4 оператора сотовой сети или IPv6 peer-to-peer сети cjdns.
+### Software
+We use Robot Operating System (ROS) framework to manage the drone flight and data collection process. It operates on a single-board Raspberry Pi 3. Interaction with the drone happens via DJI Onboard SDK. To connect to the drone remotely we use SSH through static IPv4 from service provider or IPv6 cjdns peer-to-peer network.
 
-[Руководство](../master/Ubuntu_image/README.MD) по созданию образа для Raspberry Pi.</br>
-[Руководство](../master/de_airsense_ros/README.MD) по использованию узлов ROS.</br>
-[Руководство](../master/Libelium_Waspmote_API/README.MD) по прошивке и использованию Libelium Waspmote.
+[Instruction](../master/Ubuntu_image/README.MD) on how to create an image for Raspberry Pi.</br>
+[Instruction](../master/de_airsense_ros/README.MD) on how to use ROS nodes.</br>
+[Instruction](../master/Libelium_Waspmote_API/README.MD) on how to use Libelium Waspmote.
 
-**Общая структура узлов ROS:**
+**General structure of ROS nodes:**
 
 ![](../master/rosgraph.png)
 
-**de_airsense_mission** - узел запуска дрона по миссии и получения с него необходимой телеметрии. Использует сервисы Dji SDK ROS для загрузки и запуска миссии. Миссии хранятся в файлах yaml формата.
+**de_airsense_mission** - a node that launches a drone for a mission and receives the necessary telemetry data from it. Uses DJI SDK ROS services to download and run the mission. Missions are stored in yaml format files.
 
-**de_airsense_waspmote_ipfs** - узел для сбора и записи данных с Waspmote во время полета. Также собирает данные о координатах и времени точки замера. Запись данных начинается при отрыве дрона от земли. При приземлении данные записываются в файл и отправляются в IPFS.
+**de_airsense_waspmote_ipfs** -  a node for data collection and recording with Waspmote during the flight. Also collects data on the coordinates and time of the measuring point. Data recording begins when the drone takes off. When the drone is landed the data is written to a file and sent to IPFS.
